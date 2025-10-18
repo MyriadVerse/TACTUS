@@ -16,12 +16,10 @@ class TACTSearcher(object):
         with open(table_path, "rb") as tfile:
             tables = pickle.load(tfile)
         self.tables = random.sample(tables, int(scale*len(tables)))
-        print("From %d total data-lake tables, scale down to %d tables" % (len(tables), len(self.tables)))
         self.vec_dim = len(self.tables[1][1])
         all_vectors = np.array([self._tensor_to_numpy(table[1]) for table in self.tables], dtype='float32')
 
         self.index = hnswlib.Index(space='cosine', dim=self.vec_dim)
-        print("Number of tables in the data-lake: ", len(all_vectors))
         self.index.init_index(max_elements=len(all_vectors), ef_construction=100, M=32)
         self.index.set_ef(10)
         self.index.add_items(all_vectors)

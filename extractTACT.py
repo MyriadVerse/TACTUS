@@ -66,10 +66,8 @@ if __name__ == '__main__':
         dataDir = ['query', 'benchmark']
 
     for dir in dataDir:
-        print("//==== ", dir)
         DATAFOLDER = DATAPATH+dir
         dfs = get_df(DATAFOLDER)
-        print("num dfs:",len(dfs))
 
         dataEmbeds = []
         dfs_totalCount = len(dfs)

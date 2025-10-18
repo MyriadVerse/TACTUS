@@ -38,20 +38,12 @@ if __name__ == '__main__':
 
     returnedResults = {}
     saveResults = {}
-    avgNumResults = []
-    query_times = []
 
     for q in tqdm(queries):
         query_start_time = time.time()
         res, scoreLength = searcher.topk(q,K)
-        avgNumResults.append(scoreLength)
         saveResults[q[0]] = res
         returnedResults[q[0]] = [r[1] for r in res]
-        query_times.append(time.time() - query_start_time)
-
-    print("Average number of Results: ", sum(avgNumResults)/len(avgNumResults))
-    print("Average QUERY TIME: %s seconds " % (sum(query_times)/len(query_times)))
-    print("10th percentile: ", np.percentile(query_times, 10), " 90th percentile: ", np.percentile(query_times, 90))
 
     if hp.benchmark == 'santosLarge' or hp.benchmark == 'wdc':
         print("No groundtruth for %s benchmark" % (hp.benchmark))
