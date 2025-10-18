@@ -68,10 +68,10 @@ This section provides instructions for running **TACT**, including pretraining, 
     ```
 
     where
-    * `top_k_value`: Number of retrieved candidates, reflecting the typical number of unionable tables per query
-    - *K = 60* for **TUS** datasets
-    - *K = 10* for **SANTOS** and **WDC** datasets
-    - *K = 40* for **Wiki Union**.
+    * `K`: Number of retrieved candidates, reflecting the typical number of unionable tables per query
+        - *K = 60* for **TUS** datasets
+        - *K = 10* for **SANTOS** and **WDC** datasets
+        - *K = 40* for **Wiki Union**.
 
     i.e.,
     ```bash

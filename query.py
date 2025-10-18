@@ -3,8 +3,9 @@ import argparse
 import time
 import numpy as np
 from tqdm import tqdm
-from tact_search import TACTSearcher
-from checkPrecisionRecall import calcMetrics
+from src.search import TACTSearcher
+from src.utils import calcMetrics
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -1,11 +1,9 @@
 import argparse
 import pickle
 from tqdm import tqdm
-from typing import Dict, List, Any
-from checkPrecisionRecall import calcMetrics
-import torch.nn.functional as F
+from typing import Dict, List
+from src.utils import calcMetrics
 import torch
-from multiprocessing import Pool, cpu_count
 
 
 def online_processing(benchmark_path: str = "benchmark_value_embeddings.pkl", 
@@ -20,7 +18,6 @@ def online_processing(benchmark_path: str = "benchmark_value_embeddings.pkl",
         normalized_benchmark = pickle.load(f)
     with open(query_path, "rb") as f:
         normalized_query = pickle.load(f)
-    
     with open(candidates_path, 'rb') as f:
         results_dict = pickle.load(f)
     
@@ -29,7 +26,7 @@ def online_processing(benchmark_path: str = "benchmark_value_embeddings.pkl",
             return [0.0] * len(candidate_embs_list)
         
         m, d = query_embs.shape
-        max_n = 10
+        max_n = 20
         valid_indices = []
         valid_embs = []
         
@@ -62,7 +59,6 @@ def online_processing(benchmark_path: str = "benchmark_value_embeddings.pkl",
                 query_embs.unsqueeze(0),  
                 B_transposed             
             )  
-            
             sim_matrix = sim_matrix.masked_fill(
                 ~mask_batch.unsqueeze(1),  
                 float('-inf')
@@ -94,17 +90,11 @@ def online_processing(benchmark_path: str = "benchmark_value_embeddings.pkl",
         candidates.sort(key=lambda x: x[0], reverse=True)
         current_K = min(K, len(candidates))
         return_result[key] = [table for _, table in candidates[:current_K]]
-    
 
     if gt_path:
         calcMetrics(K, k_range, return_result, gtPath=gt_path)
-
-    total_candidates = sum(len(v) for v in results_dict.values())
-    print(f"Total candidates processed: {total_candidates}")  
     
     return return_result
-
-
 
 
 if __name__ == "__main__":

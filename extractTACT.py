@@ -1,4 +1,4 @@
-from src.pretrain import load_checkpoint, inference_on_tables
+from src.train import load_checkpoint, inference_on_tables
 import torch
 import pandas as pd
 import numpy as np

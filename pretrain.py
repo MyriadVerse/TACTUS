@@ -4,7 +4,7 @@ import random
 import torch
 
 from src.dataset import PretrainTableDataset
-from src.pretrain import train
+from src.train import train
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
