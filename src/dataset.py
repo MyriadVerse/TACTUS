@@ -8,12 +8,9 @@ from typing import List
 from torch.utils import data
 from transformers import AutoTokenizer
 
-from .augment import augment
 from .preprocessor import preprocess
 
-lm_mp = {'roberta': 'roberta-base',
-         'bert': 'bert-base-uncased',
-         'distilbert': 'distilbert-base-uncased'}
+lm_mp = {'bert': 'bert-base-uncased'}
 
 
 class PretrainTableDataset(data.Dataset):
@@ -22,25 +19,23 @@ class PretrainTableDataset(data.Dataset):
                  augment_op,
                  max_len=256,
                  size=None,
-                 lm='roberta',
+                 lm='bert',
                  single_column=False,
-                 sample_meth='wordProb',
+                 sample_meth='priority_sample',
                  table_order='column'):
         self.tokenizer = AutoTokenizer.from_pretrained(lm_mp[lm])
         self.max_len = max_len
         self.path = path
+        self.augment_op = augment_op
+        self.sample_meth = sample_meth
+        self.single_column = single_column
+        self.table_order = table_order
+        self.table_cache = {}
 
         self.tables = [fn for fn in os.listdir(path) if '.csv' in fn]
         if size is not None:
             self.tables = self.tables[:size]
 
-        self.table_cache = {}
-        self.augment_op = augment_op
-        self.log_cnt = 0
-        self.sample_meth = sample_meth
-        self.single_column = single_column
-        self.table_order = table_order
-        self.tokenizer_cache = {}
 
     @staticmethod
     def from_hp(path: str, hp: Namespace):
@@ -74,26 +69,19 @@ class PretrainTableDataset(data.Dataset):
         if self.table_order == 'column':
             for column in table.columns:
                 tokens = preprocess(table[column], max_tokens, self.sample_meth)
-                col_text = self.tokenizer.cls_token + " " + \
-                        ' '.join(tokens[:max_tokens]) + " "
+                col_text = self.tokenizer.cls_token + " " + ' '.join(tokens[:max_tokens]) + " "
 
                 column_mp[column] = len(res)
-                res += self.tokenizer.encode(text=col_text,
-                                        max_length=budget,
-                                        add_special_tokens=False,
-                                        truncation=True)
+                res += self.tokenizer.encode(text=col_text, max_length=budget, add_special_tokens=False, truncation=True)
         else:
             raise ValueError(f"Unsupported table order: {self.table_order}")
-
-        self.log_cnt += 1
-        # if self.log_cnt % 5000 == 0:
-        #     print(self.tokenizer.decode(res))
-
+        
         return res, column_mp
 
 
     def __len__(self):
         return len(self.tables)
+
 
     def __getitem__(self, idx):
         table_ori = self._read_table(idx)
@@ -102,13 +90,10 @@ class PretrainTableDataset(data.Dataset):
             col = random.choice(table_ori.columns)
             table_ori = table_ori[[col]]
 
-        if self.augment_op == 'sample_table':
-            table_aug = augment(table_ori, self.augment_op)
-            if len(table_ori) > 5:
-                sample_size = random.randint(1, len(table_ori)-1)
-                table_ori = table_ori.sample(n=sample_size, replace=True)
-        else:
-            raise ValueError(f"Unsupported operation: {self.augment_op}")
+        table_aug = augment(table_ori, self.augment_op)
+        if len(table_ori) > 5:
+            sample_size = random.randint(1, len(table_ori)-1)
+            table_ori = table_ori.sample(n=sample_size, replace=True)
 
         x_ori, mp_ori = self._tokenize(table_ori)
         x_aug, mp_aug = self._tokenize(table_aug)
@@ -142,3 +127,19 @@ class PretrainTableDataset(data.Dataset):
                 cls_aug.append(item[1])
 
         return torch.LongTensor(x_ori_new), torch.LongTensor(x_aug_new), (cls_ori, cls_aug)
+
+
+def augment(table: pd.DataFrame, op: str):
+    if op == 'sample_table':
+        table = table.copy()
+        if len(table) > 5 and len(table.columns) > 2:
+            sample_size = random.randint(1, len(table)-1)
+            table = table.sample(n=sample_size, replace=True)
+            
+            num_to_drop = random.randint(1, len(table.columns) - 1)
+            cols_to_drop = random.sample(list(table.columns), num_to_drop)
+            table = table.drop(columns=cols_to_drop)
+    else:
+        raise ValueError(f"Unsupported operation: {op}")
+
+    return table

@@ -1,6 +1,4 @@
-import pickle
 import pickle5 as p
-import mlflow
 
 
 def loadDictionaryFromPickleFile(dictionaryPath):
@@ -9,13 +7,8 @@ def loadDictionaryFromPickleFile(dictionaryPath):
     filePointer.close()
     return dictionary
 
-def saveDictionaryAsPickleFile(dictionary, dictionaryPath):
-    filePointer=open(dictionaryPath, 'wb')
-    pickle.dump(dictionary,filePointer, protocol=pickle.HIGHEST_PROTOCOL)
-    filePointer.close()
 
-
-def calcMetrics(max_k, k_range, resultFile, gtPath=None, resPath=None, record=True):
+def calcMetrics(max_k, k_range, resultFile, gtPath=None):
     groundtruth = loadDictionaryFromPickleFile(gtPath)
 
     precision_array = []
@@ -28,22 +21,21 @@ def calcMetrics(max_k, k_range, resultFile, gtPath=None, resPath=None, record=Tr
         rec = 0
         ideal_recall = []
         for table in resultFile:
-            if table.split("____",1)[0] != "t_28dc8f7610402ea7": 
-                if table in groundtruth:
-                    groundtruth_set = set(groundtruth[table])
-                    groundtruth_set = {x.split(".")[0] for x in groundtruth_set}
-                    result_set = resultFile[table][:k]
-                    result_set = [x.split(".")[0] for x in result_set]
-                    find_intersection = set(result_set).intersection(groundtruth_set)
-                    tp = len(find_intersection)
-                    fp = k - tp
-                    fn = len(groundtruth_set) - tp
-                    if len(groundtruth_set)>=k: 
-                        true_positive += tp
-                        false_positive += fp
-                        false_negative += fn
-                    rec += tp / (tp+fn)
-                    ideal_recall.append(k/len(groundtruth[table]))
+            if table in groundtruth:
+                groundtruth_set = set(groundtruth[table])
+                groundtruth_set = {x.split(".")[0] for x in groundtruth_set}
+                result_set = resultFile[table][:k]
+                result_set = [x.split(".")[0] for x in result_set]
+                find_intersection = set(result_set).intersection(groundtruth_set)
+                tp = len(find_intersection)
+                fp = k - tp
+                fn = len(groundtruth_set) - tp
+                if len(groundtruth_set)>=k: 
+                    true_positive += tp
+                    false_positive += fp
+                    false_negative += fn
+                rec += tp / (tp+fn)
+                ideal_recall.append(k/len(groundtruth[table]))
         precision = true_positive / (true_positive + false_positive)
         recall = rec/len(resultFile)
         precision_array.append(precision)
@@ -66,10 +58,5 @@ def calcMetrics(max_k, k_range, resultFile, gtPath=None, resPath=None, record=Tr
         map_sum += precision_array[k]
     mean_avg_pr = map_sum/max_k
     print("The mean average precision is:", mean_avg_pr)
-
-    if record: 
-        mlflow.log_metric("mean_avg_precision", mean_avg_pr)
-        mlflow.log_metric("prec_k", precision_array[max_k-1])
-        mlflow.log_metric("recall_k", recall_array[max_k-1])
 
     return mean_avg_pr, precision_array[max_k-1], recall_array[max_k-1] 

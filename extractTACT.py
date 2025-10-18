@@ -34,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument("--table_order", type=str, default='column')
     parser.add_argument("--save_model", dest="save_model", action="store_true")
     parser.add_argument("--augment_op", type=str, default='sample_table')
-    parser.add_argument("--sample_meth", type=str, default='priority_simple')
+    parser.add_argument("--sample_meth", type=str, default='priority_sample')
 
     hp = parser.parse_args()
 

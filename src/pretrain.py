@@ -1,17 +1,11 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import numpy as np
-import sklearn.metrics as metrics
 import pandas as pd
 import os
 from tqdm import tqdm
 
-from .model import BarlowTwinsSimCLR
+from .model import TACT
 from .dataset import PretrainTableDataset
 
-from tqdm import tqdm
 from torch.utils import data
 from transformers import AdamW, get_linear_schedule_with_warmup
 from typing import List
@@ -34,8 +28,6 @@ def train_step(train_iter, model, optimizer, scheduler, scaler, hp):
             optimizer.step()
 
         scheduler.step()
-        if i % 100 == 0: 
-            print(f"   step: {i}, loss: {loss.item()}")
 
 
 def train(trainset, hp):
@@ -47,7 +39,7 @@ def train(trainset, hp):
                                  collate_fn=padder)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = BarlowTwinsSimCLR(hp, device=device, lm=hp.lm)
+    model = TACT(hp, device=device, lm=hp.lm)
     model = model.cuda()
     optimizer = AdamW(model.parameters(), lr=hp.lr)
 
@@ -57,12 +49,9 @@ def train(trainset, hp):
         scaler = None
 
     num_steps = (len(trainset) // hp.batch_size) * hp.n_epochs
-    scheduler = get_linear_schedule_with_warmup(optimizer,
-                                                num_warmup_steps=0,
-                                                num_training_steps=num_steps)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=num_steps)
 
     for epoch in tqdm(range(1, hp.n_epochs+1)):
-        print("Epoch %d" % epoch)
         model.train()
         train_step(train_iter, model, optimizer, scheduler, scaler, hp)
 
@@ -79,7 +68,7 @@ def train(trainset, hp):
 
 
 def inference_on_tables(tables: List[pd.DataFrame],
-                        model: BarlowTwinsSimCLR,
+                        model: TACT,
                         unlabeled: PretrainTableDataset,
                         batch_size=128,
                         total=None):
@@ -112,7 +101,7 @@ def load_checkpoint(ckpt):
     hp = ckpt['hp']
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = BarlowTwinsSimCLR(hp, device=device, lm=hp.lm)
+    model = TACT(hp, device=device, lm=hp.lm)
     model = model.to(device)
     model.load_state_dict(ckpt['model'])
 

@@ -15,7 +15,7 @@ if __name__ == '__main__':
     parser.add_argument("--n_epochs", type=int, default=10)
     parser.add_argument("--scal", type=float, default=1.00)
     parser.add_argument("--augment_op", type=str, default='sample_table')
-    parser.add_argument("--sample_meth", type=str, default='priority_simple')
+    parser.add_argument("--sample_meth", type=str, default='priority_sample')
     parser.add_argument("--pooling", type=str, default='multihead_attn')
 
     hp = parser.parse_args()

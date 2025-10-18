@@ -1,7 +1,5 @@
 fasttext==0.9.3
 hnswlib==0.8.0
-mlflow==2.20.0
-mlflow_skinny==2.20.0
 numpy==1.23.4
 pandas==1.4.4
 pickle5==0.0.11

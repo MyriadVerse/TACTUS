@@ -4,13 +4,11 @@ import torch.nn.functional as F
 from transformers import AutoModel, AutoTokenizer
 from torch_scatter import scatter_add
 
-lm_mp = {'roberta': 'roberta-base',
-         'bert': 'bert-base-uncased',
-         'distilbert': 'distilbert-base-uncased'}
+lm_mp = {'bert': 'bert-base-uncased'}
 
 
-class BarlowTwinsSimCLR(nn.Module):
-    def __init__(self, hp, device='cuda', lm='roberta'):
+class TACT(nn.Module):
+    def __init__(self, hp, device='cuda', lm='bert'):
         super().__init__()
         self.hp = hp
         self.bert = AutoModel.from_pretrained(lm_mp[lm])
@@ -93,8 +91,7 @@ class BarlowTwinsSimCLR(nn.Module):
         column_vectors = z.view((x_flat.shape[0], -1))
 
         if cls_indices is None:
-            indices = [idx for idx, token_id in enumerate(x_flat) \
-                if token_id == self.cls_token_id]
+            indices = [idx for idx, token_id in enumerate(x_flat) if token_id == self.cls_token_id]
         else:
             indices = []
             seq_len = x.shape[-1]
@@ -153,6 +150,7 @@ class BarlowTwinsSimCLR(nn.Module):
         
         weighted_z = z * weights.unsqueeze(1)
         return scatter_add(weighted_z, table_indices, dim=0)
+
 
     def _multihead_attn_pool(self, z, table_indices):
         unique_tables = torch.unique(table_indices)

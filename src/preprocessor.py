@@ -3,22 +3,22 @@ import heapq
 import pandas as pd
 import collections
 
+
 def preprocess(column: pd.Series, max_tokens: int, method: str): 
     tokens = []
     colVals = " ".join(map(str, column.tolist())).split(" ")
-    if method == 'priority_simple':
-        tokens = cell_priority_sampling(colVals, m=max_tokens, random_seed=42)
+    if method == 'priority_sample':
+        tokens = priority_sampling(colVals, m=max_tokens, random_seed=42)
     else:
         raise ValueError(f"Unsupported sampling method: {method}")
     return tokens
 
 
-def cell_priority_sampling(series, m=10, random_seed=42):
+def priority_sampling(series, m=100, random_seed=42):
     if len(series) == 0:
         return []
     if m > 100:
         m = 100
-    freq_counter = collections.Counter(series)
 
     def hash_function(val, seed=random_seed):
         val_str = str(val).encode('utf-8')
@@ -27,6 +27,7 @@ def cell_priority_sampling(series, m=10, random_seed=42):
         raw_hash = hash_int / (2 ** 160)
         return 0.8 + 0.2 * raw_hash 
     
+    freq_counter = collections.Counter(series)
     top_m_freqs = heapq.nlargest(m, freq_counter.values())
     if not top_m_freqs:
         return [] 
@@ -41,8 +42,7 @@ def cell_priority_sampling(series, m=10, random_seed=42):
         priority_values.append((priority, val))
 
     priority_values.sort(reverse=True) 
-    sampled_cells = [val for _, val in priority_values[:m]]
-    
-    return sampled_cells
-    
-    
+    sampled_tokens = [val for _, val in priority_values[:m]]
+
+    return sampled_tokens
+

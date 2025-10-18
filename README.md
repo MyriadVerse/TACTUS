@@ -25,7 +25,7 @@ The following table summarizes the benchmarks used in our experiments and provid
 | **Wiki Union** | [./data](./data)                                                                                                           |
 | **WDC**        | [https://webdatacommons.org/webtables/](https://webdatacommons.org/webtables/)                                             |
 
-For the **SANTOS**, **TUS**, and **WDC** benchmarks, we include links to their official sources for convenient access and reproducibility.
+For the **SANTOS**, **TUS**, and **WDC** benchmarks, we include links to their official sources.
 For the **Wiki Union** benchmark, which we constructed based on existing resources, we provide our version of the dataset in this repository to facilitate future research.
 We also thank [**LakeBench**](https://zenodo.org/records/8014643) for providing the data and labels that served as the foundation for constructing the **Wiki Union** benchmark.
 
@@ -36,29 +36,58 @@ This section provides instructions for running **TACT**, including pretraining, 
 
 1. Pretrain by running:
 
-```bash
-python pretrain.py --task [task] --logdir [dir_path] --save_model
-```
+    ```bash
+    python pretrain.py --task [task] --logdir [dir_path] --save_model
+    ```
+
+    where
+    * `task`: Name of the dataset (e.g., `santos`, `santosLarge`, `tus`, `tusLarge`, `wiki`, `wdc`)
+    * `logdir`: Directory path for saving models
+    * `save_model`: Optional flag to save the model
+
+    i.e.,
+    ```bash
+    python pretrain.py --task santos --logdir ./Models --save_model
+    ```
 
 2. Inference by running:
 
-```bash
-python extractVectors.py --benchmark [task] --save_model & python extractFasttext.py --task [task] & wait
+    ```bash
+    python extractTACT.py --benchmark [task] --save_model & python extractFasttext.py --task [task] & wait
+    ```
 
-```
+    i.e.,
+    ```bash
+    python extractTACT.py --benchmark santos --save_model & python extractFasttext.py --task santos & wait
+    ```
 
-3. Querying by running 
+3. Query by running 
 
-```bash
-python query.py --benchmark [task] --K [top_k_value]
-```
+    ```bash
+    python query.py --benchmark [task] --K [top_k_value]
+    ```
+
+    where
+    * `top_k_value`: Number of retrieved candidates, reflecting the typical number of unionable tables per query
+    - *K = 60* for **TUS** datasets
+    - *K = 10* for **SANTOS** and **WDC** datasets
+    - *K = 40* for **Wiki Union**.
+
+    i.e.,
+    ```bash
+    python query.py --benchmark santos --K 10
+    ```
 
 4. Reranking by running
 
-```bash
-python rerank.py --task [task]
-```
+    ```bash
+    python rerank.py --task [task]
+    ```
 
+    i.e.,
+    ```bash
+    python rerank.py --task santos
+    ```
 
 ## 🙏 Acknowledgement
 

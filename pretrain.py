@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument("--lm", type=str, default='bert')
     parser.add_argument("--projector", type=int, default=768)
     parser.add_argument("--augment_op", type=str, default='sample_table')
-    parser.add_argument("--sample_meth", type=str, default='priority_simple')
+    parser.add_argument("--sample_meth", type=str, default='priority_sample')
     parser.add_argument("--save_model", dest="save_model", action="store_true")
     parser.add_argument("--fp16", dest="fp16", action="store_true")
     parser.add_argument("--single_column", dest="single_column", action="store_true")
@@ -39,8 +39,8 @@ if __name__ == '__main__':
 
     if "tus" in hp.task:
         path = 'dir_to_datalake'
-        if hp.task == "tusLarge":
-            path = 'dir_to_datalake'
+    elif hp.task == "tusLarge":
+        path = 'dir_to_datalake'
     elif hp.task == "santos":
         path = 'dir_to_datalake'
     elif hp.task == "wiki":
