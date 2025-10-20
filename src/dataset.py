@@ -4,9 +4,8 @@ import random
 import pandas as pd
 import os
 from typing import List
-
-from torch.utils import data
 from transformers import AutoTokenizer
+from torch.utils import data
 
 from .preprocessor import preprocess
 
@@ -20,7 +19,6 @@ class PretrainTableDataset(data.Dataset):
                  max_len=256,
                  size=None,
                  lm='bert',
-                 single_column=False,
                  sample_meth='priority_sample',
                  table_order='column'):
         self.tokenizer = AutoTokenizer.from_pretrained(lm_mp[lm])
@@ -28,7 +26,6 @@ class PretrainTableDataset(data.Dataset):
         self.path = path
         self.augment_op = augment_op
         self.sample_meth = sample_meth
-        self.single_column = single_column
         self.table_order = table_order
         self.table_cache = {}
 
@@ -44,7 +41,6 @@ class PretrainTableDataset(data.Dataset):
                          lm=hp.lm,
                          max_len=hp.max_len,
                          size=hp.size,
-                         single_column=hp.single_column,
                          sample_meth=hp.sample_meth,
                          table_order=hp.table_order)
 
@@ -85,11 +81,6 @@ class PretrainTableDataset(data.Dataset):
 
     def __getitem__(self, idx):
         table_ori = self._read_table(idx)
-
-        if self.single_column:
-            col = random.choice(table_ori.columns)
-            table_ori = table_ori[[col]]
-
         table_aug = augment(table_ori, self.augment_op)
         if len(table_ori) > 5:
             sample_size = random.randint(1, len(table_ori)-1)

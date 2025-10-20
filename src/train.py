@@ -2,13 +2,12 @@ import torch
 import pandas as pd
 import os
 from tqdm import tqdm
-
-from .model import TACT
-from .dataset import PretrainTableDataset
-
 from torch.utils import data
 from transformers import AdamW, get_linear_schedule_with_warmup
 from typing import List
+
+from .model import TACT
+from .dataset import PretrainTableDataset
 
 
 def train_step(train_iter, model, optimizer, scheduler, scaler, hp):
@@ -48,7 +47,7 @@ def train(trainset, hp):
     else:
         scaler = None
 
-    num_steps = (len(trainset) // hp.batch_size) * hp.n_epochs
+    num_steps = (len(trainset) // hp.batch_size) * 10
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=num_steps)
 
     for epoch in tqdm(range(1, hp.n_epochs+1)):
@@ -56,11 +55,13 @@ def train(trainset, hp):
         train_step(train_iter, model, optimizer, scheduler, scaler, hp)
 
         if hp.save_model:
-            directory = os.path.join(hp.logdir, hp.task)
+            directory = os.path.join(hp.logdir, hp.data)
+            if not os.path.exists(hp.logdir):
+                os.makedirs(hp.logdir)
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            ckpt_path = os.path.join(hp.logdir, hp.task, 'model_'+hp.augment_op+'_'+str(hp.sample_meth)+'_'+str(hp.table_order)+'_ep@'+str(epoch)+'_'+str(hp.run_id)+'.pt')
+            ckpt_path = os.path.join(hp.logdir, hp.data, 'model_'+hp.augment_op+'_'+str(hp.sample_meth)+'_'+str(hp.table_order)+'_ep@'+str(epoch)+'_'+str(hp.run_id)+'.pt')
 
             ckpt = {'model': model.state_dict(),
                     'hp': hp}
@@ -91,7 +92,6 @@ def inference_on_tables(tables: List[pd.DataFrame],
                             current.append(column_vectors[ptr].cpu().numpy())
                             ptr += 1
                     results.append(current)
-
             batch.clear()
 
     return results
@@ -99,24 +99,23 @@ def inference_on_tables(tables: List[pd.DataFrame],
 
 def load_checkpoint(ckpt):
     hp = ckpt['hp']
-
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = TACT(hp, device=device, lm=hp.lm)
     model = model.to(device)
     model.load_state_dict(ckpt['model'])
 
-    if hp.task == "santos":
-        ds_path = 'dir_to_datalake'
-    elif hp.task == "santosLarge":
-        ds_path = 'dir_to_datalake'
-    elif hp.task == "tus":
-        ds_path = 'dir_to_datalake'
-    elif hp.task == "tusLarge":
-        ds_path = 'dir_to_datalake'
-    elif hp.task == "wdc":
-        ds_path = 'dir_to_datalake'
-    elif hp.task == "wiki":
-        ds_path = 'dir_to_datalake'
+    if hp.data == "santosSmall":
+        ds_path = './data/santosSmall/datalake'
+    elif hp.data == "santosLarge":
+        ds_path = './data/santosLarge/datalake'
+    elif hp.data == "tusSmall":
+        ds_path = './data/tusSmall/datalake'
+    elif hp.data == "tusLarge":
+        ds_path = './data/tusLarge/datalake'
+    elif hp.data == "wdc":
+        ds_path = './data/wdc/datalake'
+    elif hp.data == "wiki":
+        ds_path = './data/wiki/datalake'
     dataset = PretrainTableDataset.from_hp(ds_path, hp)
 
     return model, dataset

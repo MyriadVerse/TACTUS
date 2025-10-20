@@ -14,6 +14,37 @@ pip install -r requirements.txt
 ```
 
 
+## 🚀 Run the Code
+
+This section provides instructions for running **TACT**.
+
+1. Offline Process:
+
+    ```bash
+    python offline.py --data [data] --save_model
+    ```
+
+    where
+    * `data`: Name of the dataset (e.g., `santosSmall`, `santosLarge`, `tusSmall`, `tusLarge`, `wiki`, `wdc`)
+    * `save_model`: Optional flag to save the model
+
+    e.g.,
+    ```bash
+    python offline.py --data santosSmall --save_model
+    ```
+
+2. Online Query:
+
+    ```bash
+    python query.py --data [data]
+    ```
+
+    e.g.,
+    ```bash
+    python query.py --data santosSmall
+    ```
+
+
 ## 📊 Datasets
 
 The following table summarizes the benchmarks used in our experiments and provides their download links.
@@ -22,74 +53,10 @@ The following table summarizes the benchmarks used in our experiments and provid
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | **SANTOS**     | [https://zenodo.org/record/7758091](https://zenodo.org/record/7758091)                                                     |
 | **TUS**        | [https://github.com/RJMillerLab/table-union-search-benchmark](https://github.com/RJMillerLab/table-union-search-benchmark) |
-| **Wiki Union** | [./data](./data)                                                                                                           |
+| **Wiki Union** | [./data/Wiki-Union](./data/Wiki-Union)                                                                                                           |
 | **WDC**        | [https://webdatacommons.org/webtables/](https://webdatacommons.org/webtables/)                                             |
 
-For the **SANTOS**, **TUS**, and **WDC** benchmarks, we include links to their official sources.
-For the **Wiki Union** benchmark, which we constructed based on existing resources, we provide our version of the dataset in this repository to facilitate future research.
-We also thank [**LakeBench**](https://zenodo.org/records/8014643) for providing the data and labels that served as the foundation for constructing the **Wiki Union** benchmark.
-
-
-## 🚀 Run the Code
-
-This section provides instructions for running **TACT**, including pretraining, inference, querying, and reranking.
-
-1. Pretrain by running:
-
-    ```bash
-    python pretrain.py --task [task] --logdir [dir_path] --save_model
-    ```
-
-    where
-    * `task`: Name of the dataset (e.g., `santos`, `santosLarge`, `tus`, `tusLarge`, `wiki`, `wdc`)
-    * `logdir`: Directory path for saving models
-    * `save_model`: Optional flag to save the model
-
-    i.e.,
-    ```bash
-    python pretrain.py --task santos --logdir ./Models --save_model
-    ```
-
-2. Inference by running:
-
-    ```bash
-    python extractTACT.py --benchmark [task] --save_model & python extractFasttext.py --task [task] & wait
-    ```
-
-    i.e.,
-    ```bash
-    python extractTACT.py --benchmark santos --save_model & python extractFasttext.py --task santos & wait
-    ```
-
-3. Query by running 
-
-    ```bash
-    python query.py --benchmark [task] --K [top_k_value]
-    ```
-
-    where
-    * `K`: Number of retrieved candidates, reflecting the typical number of unionable tables per query
-        - *K = 60* for **TUS** datasets
-        - *K = 10* for **SANTOS** and **WDC** datasets
-        - *K = 40* for **Wiki Union**.
-
-    i.e.,
-    ```bash
-    python query.py --benchmark santos --K 10
-    ```
-
-4. Reranking by running
-
-    ```bash
-    python rerank.py --task [task]
-    ```
-
-    i.e.,
-    ```bash
-    python rerank.py --task santos
-    ```
 
 ## 🙏 Acknowledgement
 
 We gratefully acknowledge the open-source implementation of [**Starmie**](https://github.com/megagonlabs/starmie), which provides basic components that facilitated parts of our implementation.
-We also thank [**LakeBench**](https://zenodo.org/records/8014643) for providing the data and labels that served as the foundation for constructing the **Wiki Union** benchmark.

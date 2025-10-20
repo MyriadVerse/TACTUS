@@ -14,7 +14,6 @@ class TACT(nn.Module):
         self.bert = AutoModel.from_pretrained(lm_mp[lm])
         self.device = device
         hidden_size = 768
-
         self.projector = nn.Linear(hidden_size, hp.projector)
         self.bn = nn.BatchNorm1d(hidden_size, affine=False)
         self.fc = nn.Linear(hidden_size * 2, 4)
@@ -57,7 +56,6 @@ class TACT(nn.Module):
         hx_all = self.table_projector(aggregate(z_aug, aug_table_indices))
         real_batch_size = gx_all.size(0)
         features = torch.cat([gx_all, hx_all], dim=0)
-        
         features = F.normalize(features, dim=1)
         similarity_matrix = torch.matmul(features, features.T)
         
@@ -84,7 +82,6 @@ class TACT(nn.Module):
         
         return logits, labels
     
-
 
     def _extract_columns(self, x, z, cls_indices=None):
         x_flat = x.view(-1)
@@ -125,7 +122,6 @@ class TACT(nn.Module):
         z_aug = self._extract_columns(x_aug, z_aug, cls_aug)
         z = torch.cat((z_ori, z_aug))
         z = self.projector(z)
-
 
         ori_table_indices = torch.cat([
             torch.full((len(col_indices),), fill_value=table_idx, device=z_ori.device)

@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import pickle
 import hnswlib
 import torch
@@ -7,23 +6,12 @@ import torch
 
 class TACTSearcher(object):
     def __init__(self,
-                 table_path,
-                 index_path,
-                 scale, 
-                 device='cuda'):
-        self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
-
-        with open(table_path, "rb") as tfile:
-            tables = pickle.load(tfile)
-        self.tables = random.sample(tables, int(scale*len(tables)))
-        self.vec_dim = len(self.tables[1][1])
-        all_vectors = np.array([self._tensor_to_numpy(table[1]) for table in self.tables], dtype='float32')
-
-        self.index = hnswlib.Index(space='cosine', dim=self.vec_dim)
-        self.index.init_index(max_elements=len(all_vectors), ef_construction=100, M=32)
-        self.index.set_ef(10)
-        self.index.add_items(all_vectors)
-        
+                 table_path: str,
+                 index_path: str):
+        self.tables = pickle.load(open(table_path, "rb"))
+        self.index = hnswlib.Index(space='cosine', dim=768)
+        self.index.load_index(index_path)
+    
     
     def topk(self, query, K, similarity_threshold=0.5, drop_threshold=0.2):
         query_vec = self._tensor_to_numpy(query[1]).astype('float32')
@@ -48,12 +36,6 @@ class TACTSearcher(object):
 
         return similarities[:cutoff], cutoff
 
-
-    def _to_device(self, tensor):
-        if isinstance(tensor, torch.Tensor):
-            return tensor.to(self.device)
-        return torch.tensor(tensor, device=self.device)
-    
 
     def _tensor_to_numpy(self, tensor):
         if isinstance(tensor, torch.Tensor):
