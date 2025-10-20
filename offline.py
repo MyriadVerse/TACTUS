@@ -177,7 +177,6 @@ def preprocess_tables(data_dir: str, top_n: int = 100, max_workers: int = 10) ->
 
 def run_value_embedding(hp):
     global MODEL_PATH
-    os.environ["TOKENIZERS_PARALLELISM"] = "false"  
     fasttext.util.download_model('en', if_exists='ignore')
     MODEL_PATH = 'cc.en.300.bin'
     _ = fasttext.load_model(MODEL_PATH)
@@ -187,7 +186,7 @@ def run_value_embedding(hp):
 
     benchmark_embeddings = preprocess_tables(benchmark_dir, hp.top_n)
     query_embeddings = preprocess_tables(query_dir, hp.top_n)
-
+    
     os.makedirs("./embedding", exist_ok=True)
     with open(f"./embedding/{hp.data}/datalake_value_embeddings.pkl", "wb") as f:
         pickle.dump(benchmark_embeddings, f)
@@ -239,11 +238,10 @@ if __name__ == "__main__":
 
     run_pretrain(hp)
     
-    p1 = Process(target=run_value_embedding, args=(hp,))
-    p2 = Process(target=run_TACT_embedding, args=(hp,))
-    p1.start()
-    p2.start()
-    p1.join()
-    p2.join()
+    p = Process(target=run_value_embedding, args=(hp,))
+    p.start()
 
+    run_TACT_embedding(hp)
+
+    p.join()
     run_index(hp)
