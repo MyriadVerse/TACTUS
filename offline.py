@@ -62,7 +62,7 @@ def get_df(dataFolder):
     return dataDFs
 
 
-def run_TACT(hp):
+def run_TACT_embedding(hp):
     dataFolder = hp.data
     dirs = {
         'santosSmall': ['query', 'datalake'],
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     run_pretrain(hp)
     
     p1 = Process(target=run_value_embedding, args=(hp,))
-    p2 = Process(target=run_TACT, args=(hp,))
+    p2 = Process(target=run_TACT_embedding, args=(hp,))
     p1.start()
     p2.start()
     p1.join()
