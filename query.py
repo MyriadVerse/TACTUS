@@ -21,23 +21,18 @@ def run_tact_search(hp, gt_path: str, K: int, k_range: int):
     searcher = TACTSearcher(table_path, index_path)
     queries = pickle.load(open(query_path, "rb"))
 
-    returnedResults = {}
     saveResults = {}
 
     for q in tqdm(queries):
         res, resLength = searcher.topk(q, K)
         saveResults[q[0]] = res
-        returnedResults[q[0]] = [r[1] for r in res]
-    
-    if gt_path:
-        calcMetrics(K, k_range, returnedResults, gtPath=gt_path)
 
     os.makedirs("./results", exist_ok=True)
     result_path = f"./results/{hp.data}_{hp.pooling}_results.pkl"
     with open(result_path, 'wb') as f:
         pickle.dump(saveResults, f)
 
-    return result_path, returnedResults
+    return result_path
 
 
 def compute_batch_similarity(query_embs, candidate_embs_list, batch_size=100):
@@ -137,7 +132,7 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"Unknown dataset: {hp.data}")
     
-    candidates_path, _ = run_tact_search(hp, gt_path, K, k_range)
+    candidates_path = run_tact_search(hp, gt_path, K, k_range)
 
     run_rerank(
         benchmark_path=f"./embedding/{hp.data}/datalake_value_embeddings.pkl",
