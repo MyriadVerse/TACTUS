@@ -1,6 +1,6 @@
-# TACTUS: Accurate and Efficient Table-Centric Table Union Search
+# TACTUS: Efficient and Effective Table-Centric Table Union Search in Data Lakes
 
-This repository contains the official implementation of **TACTUS**, accurate and efficient table-centric table union search. 
+This repository contains the official implementation of **TACTUS**, efficient and effective table-centric table union search in data lakes.
 
 ## ⚙️ Requirements
 
