@@ -50,7 +50,7 @@ The following table summarizes the benchmarks used in our experiments and provid
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | **SANTOS**     | [https://zenodo.org/record/7758091](https://zenodo.org/record/7758091)                                                     |
 | **TUS**        | [https://github.com/RJMillerLab/table-union-search-benchmark](https://github.com/RJMillerLab/table-union-search-benchmark) |
-| **Wiki Union** | [./data/wiki/Wiki-Union](./data/wiki/Wiki-Union)                                                                                                           |
+| **Wiki Union** | [./data/wiki](./data/wiki)                                                                                                           |
 | **WDC**        | [https://webdatacommons.org/webtables/](https://webdatacommons.org/webtables/)                                             |
 
 
