@@ -7,7 +7,7 @@ from torch_scatter import scatter_add
 lm_mp = {'bert': 'bert-base-uncased'}
 
 
-class TACT(nn.Module):
+class TACTUS(nn.Module):
     def __init__(self, hp, device='cuda', lm='bert'):
         super().__init__()
         self.hp = hp
@@ -40,7 +40,7 @@ class TACT(nn.Module):
         self.cls_token_id = AutoTokenizer.from_pretrained(lm_mp[lm]).cls_token_id
 
 
-    def info_nce_TACT_loss(self, features, ori_col_num, n_views, temperature=0.07, ori_table_indices=None, aug_table_indices=None):
+    def info_nce_TACTUS_loss(self, features, ori_col_num, n_views, temperature=0.07, ori_table_indices=None, aug_table_indices=None):
         z_ori = features[:ori_col_num]
         z_aug = features[ori_col_num:]
         
@@ -133,7 +133,7 @@ class TACT(nn.Module):
         ])
         ori_col = z_ori.shape[0]
 
-        logits, labels = self.info_nce_TACT_loss(z, ori_col, 2, ori_table_indices=ori_table_indices, aug_table_indices=aug_table_indices, temperature=self.hp.temp)
+        logits, labels = self.info_nce_TACTUS_loss(z, ori_col, 2, ori_table_indices=ori_table_indices, aug_table_indices=aug_table_indices, temperature=self.hp.temp)
         loss = self.criterion(logits, labels)
         return loss
 

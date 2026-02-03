@@ -4,7 +4,7 @@ import hnswlib
 import torch
 
 
-class TACTSearcher(object):
+class TACTUSSearcher(object):
     def __init__(self,
                  table_path: str,
                  index_path: str):

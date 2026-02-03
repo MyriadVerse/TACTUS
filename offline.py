@@ -62,7 +62,7 @@ def get_df(dataFolder):
     return dataDFs
 
 
-def run_TACT_embedding(hp):
+def run_TACTUS_embedding(hp):
     dataFolder = hp.data
     dirs = {
         'santosSmall': ['query', 'datalake'],
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     p = Process(target=run_value_embedding, args=(hp,))
     p.start()
 
-    run_TACT_embedding(hp)
+    run_TACTUS_embedding(hp)
 
     p.join()
     run_index(hp)

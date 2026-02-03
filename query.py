@@ -4,11 +4,11 @@ import argparse
 import torch
 from tqdm import tqdm
 from typing import Dict, List
-from src.search import TACTSearcher
+from src.search import TACTUSSearcher
 from src.utils import calcMetrics
 
 
-def run_tact_search(hp, gt_path: str, K: int, k_range: int):
+def run_tactus_search(hp, gt_path: str, K: int, k_range: int):
     sampAug = hp.augment_op + "_" + hp.sample_meth
     dataFolder = hp.data
     epoch = hp.n_epochs
@@ -18,7 +18,7 @@ def run_tact_search(hp, gt_path: str, K: int, k_range: int):
     query_path = f"./embedding/{dataFolder}/cl_query_{sampAug}_column_ep@{epoch}_{run_id}.pkl"
     index_path = f"./index/{dataFolder}_index.bin"
 
-    searcher = TACTSearcher(table_path, index_path)
+    searcher = TACTUSSearcher(table_path, index_path)
     queries = pickle.load(open(query_path, "rb"))
 
     saveResults = {}
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"Unknown dataset: {hp.data}")
     
-    candidates_path = run_tact_search(hp, gt_path, K, k_range)
+    candidates_path = run_tactus_search(hp, gt_path, K, k_range)
 
     run_rerank(
         benchmark_path=f"./embedding/{hp.data}/datalake_value_embeddings.pkl",

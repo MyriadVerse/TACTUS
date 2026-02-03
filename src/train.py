@@ -6,7 +6,7 @@ from torch.utils import data
 from transformers import AdamW, get_linear_schedule_with_warmup
 from typing import List
 
-from .model import TACT
+from .model import TACTUS
 from .dataset import PretrainTableDataset
 
 
@@ -38,7 +38,7 @@ def train(trainset, hp):
                                  collate_fn=padder)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = TACT(hp, device=device, lm=hp.lm)
+    model = TACTUS(hp, device=device, lm=hp.lm)
     model = model.cuda()
     optimizer = AdamW(model.parameters(), lr=hp.lr)
 
@@ -69,7 +69,7 @@ def train(trainset, hp):
 
 
 def inference_on_tables(tables: List[pd.DataFrame],
-                        model: TACT,
+                        model: TACTUS,
                         unlabeled: PretrainTableDataset,
                         batch_size=128,
                         total=None):
@@ -100,7 +100,7 @@ def inference_on_tables(tables: List[pd.DataFrame],
 def load_checkpoint(ckpt):
     hp = ckpt['hp']
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = TACT(hp, device=device, lm=hp.lm)
+    model = TACTUS(hp, device=device, lm=hp.lm)
     model = model.to(device)
     model.load_state_dict(ckpt['model'])
 
