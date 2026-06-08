@@ -62,25 +62,27 @@ class TACTUS(nn.Module):
         labels = torch.cat([torch.arange(real_batch_size) for _ in range(n_views)], dim=0)
         labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float().to(self.device)
         
-        potential_positives = (similarity_matrix > 0.9) & (labels == 0)
-        safe_neg_mask = ~potential_positives & ~labels.bool()
         mask = torch.eye(similarity_matrix.size(0), dtype=torch.bool, device=self.device)
-        similarity_matrix = similarity_matrix[~mask].view(similarity_matrix.size(0), -1)
-        labels = labels[~mask].view(similarity_matrix.size(0), -1)
-        safe_neg_mask = safe_neg_mask[~mask].view(similarity_matrix.size(0), -1)
-        
-        positives = similarity_matrix[labels.bool()].view(similarity_matrix.size(0), -1)
-        negatives = similarity_matrix.clone()
-        negatives[~safe_neg_mask] = -10.0 
+        labels_no_diag = labels[~mask].view(similarity_matrix.size(0), -1)
+        sim_no_diag = similarity_matrix[~mask].view(similarity_matrix.size(0), -1)
+        pos_mask = labels_no_diag.bool()
+        pos_sim = (sim_no_diag * pos_mask.float()).sum(dim=1) / pos_mask.float().sum(dim=1).clamp(min=1)
+        neg_mask = ~pos_mask
+        latent_pos = (sim_no_diag >= pos_sim.unsqueeze(1)) & neg_mask
+        safe_neg_mask = neg_mask & ~latent_pos 
+        positives = sim_no_diag[pos_mask].view(sim_no_diag.size(0), -1)
+        negatives = sim_no_diag.clone()
+        negatives[~safe_neg_mask] = -10.0
+        neg_distance = (pos_sim.unsqueeze(1) - negatives).abs()
+        neg_distance[~safe_neg_mask] = float('inf')
+        neg_score = -neg_distance
+        neg_score[~safe_neg_mask] = -10.0
         k = max(1, int(0.5 * safe_neg_mask.sum(dim=1).float().mean().item()))
-        hard_negatives, _ = negatives.topk(k, dim=1, largest=True)
-        new_negatives = torch.full_like(negatives, -10.0)  
-        new_negatives[:, :k] = hard_negatives
-        
-        logits = torch.cat([positives, new_negatives], dim=1) / temperature
-        labels = torch.zeros(logits.size(0), dtype=torch.long, device=self.device)
-        
-        return logits, labels
+        _, topk_indices = neg_score.topk(k, dim=1, largest=True)
+        hard_negatives = sim_no_diag.gather(1, topk_indices)
+        logits = torch.cat([positives, hard_negatives], dim=1) / temperature
+        labels_out = torch.zeros(logits.size(0), dtype=torch.long, device=self.device)
+        return logits, labels_out
     
 
     def _extract_columns(self, x, z, cls_indices=None):

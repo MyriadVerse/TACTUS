@@ -31,7 +31,7 @@ def run_pretrain(hp):
     elif hp.data == "tusLarge":
         path = './data/tusLarge/datalake'
     elif hp.data == "santosSmall":
-        path = './data/santosSmall/datalake'
+        path = './data/santosSmall/datalake_train'
     elif hp.data == "wiki":
         path = './data/wiki/datalake'
     elif hp.data == 'santosLarge':
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=int, default=5000)
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--temp", type=float, default=0.07)
-    parser.add_argument("--n_epochs", type=int, default=3)
+    parser.add_argument("--n_epochs", type=int, default=6)
     parser.add_argument("--lm", type=str, default='bert')
     parser.add_argument("--projector", type=int, default=768)
     parser.add_argument("--augment_op", type=str, default='sample_table')
